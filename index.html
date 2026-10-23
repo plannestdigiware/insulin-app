@@ -244,7 +244,7 @@
             color: #f87171;
             border: 1px solid rgba(239, 68, 68, 0.3);
             border-radius: 8px;
-            padding: 4px 10px;
+            padding: 5px 10px;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
@@ -258,6 +258,128 @@
             color: #ffffff;
             transform: none;
             box-shadow: none;
+        }
+
+        .btn-pwd-change {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: none;
+            width: auto;
+            transition: all 0.2s ease;
+        }
+
+        .btn-pwd-change:hover {
+            background: rgba(56, 189, 248, 0.25);
+            color: #ffffff;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            z-index: 9999;
+        }
+
+        .modal-card {
+            background: #111827;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+            box-shadow: none;
+            line-height: 1;
+        }
+
+        .modal-close-btn:hover {
+            color: #ffffff;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .modal-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #1e293b;
+            color: var(--text-secondary);
+            font-size: 14px;
+            padding: 12px;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: none;
+            width: 50%;
+        }
+
+        .btn-secondary:hover {
+            background: #334155;
+            color: #ffffff;
+            box-shadow: none;
+        }
+
+        .btn-modal-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            font-size: 14px;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+            width: 50%;
         }
 
         .header {
@@ -571,6 +693,10 @@
                     </svg>
                     Sign In
                 </button>
+
+                <div style="text-align: center; margin-top: 16px;">
+                    <a href="javascript:void(0)" onclick="promptResetPassword()" style="color: var(--text-secondary); font-size: 11px; text-decoration: none;">Forgot or reset password?</a>
+                </div>
             </form>
         </div>
 
@@ -583,9 +709,12 @@
             <div class="user-top-bar">
                 <div class="user-info">
                     <span class="user-badge">SECURE</span>
-                    <span id="currentUserName">Logged in: Admin</span>
+                    <span id="currentUserName">Logged in: Administrator</span>
                 </div>
-                <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-pwd-change" onclick="openPasswordModal()">🔑 Password</button>
+                    <button type="button" class="btn-logout" onclick="handleLogout()">Sign Out</button>
+                </div>
             </div>
 
             <!-- Header -->
@@ -653,15 +782,58 @@
 
     </div>
 
+    <!-- =============================================================
+         3. CHANGE PASSWORD MODAL DIALOG
+         ============================================================= -->
+    <div id="passwordModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Change Admin Password</h3>
+                <button type="button" class="modal-close-btn" onclick="closePasswordModal()">&times;</button>
+            </div>
+            <p class="modal-desc">Enter your current password and choose a new one.</p>
+
+            <div id="modalError" class="login-error" style="display:none; font-size:12px; margin-bottom:14px;"></div>
+
+            <form onsubmit="handlePasswordChangeSubmit(event)">
+                <div class="form-group">
+                    <label for="currentPassInput">Current Password</label>
+                    <input type="password" id="currentPassInput" class="form-control" placeholder="Current password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassInput">New Password</label>
+                    <input type="password" id="newPassInput" class="form-control" placeholder="New password (min 4 characters)" minlength="4" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassInput">Confirm New Password</label>
+                    <input type="password" id="confirmPassInput" class="form-control" placeholder="Re-type new password" minlength="4" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closePasswordModal()">Cancel</button>
+                    <button type="submit" class="btn-modal-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // =========================================================================
-        // 1. AUTHENTICATION CREDENTIALS
-        // Single Administrator Login: ID = admin | Password = admin 123
+        // 1. AUTHENTICATION & PASSWORD MANAGEMENT
+        // Default: ID = admin | Password = admin 123
+        // Supports changing password to any custom value stored in localStorage
         // =========================================================================
         const AUTH_USER = "admin";
-        const AUTH_PASS = "admin 123";
-        const AUTH_PASS_ALT = "admin123"; // allows without space as well
+        const DEFAULT_AUTH_PASS = "admin 123";
+        const DEFAULT_AUTH_PASS_ALT = "admin123";
+        const CUSTOM_PASS_KEY = "INSULIN_CUSTOM_ADMIN_PASS";
         const AUTH_STORAGE_KEY = "INSULIN_AUTH_USER";
+
+        function getEffectivePassword() {
+            return localStorage.getItem(CUSTOM_PASS_KEY); // null if using default
+        }
 
         function checkAuthStatus() {
             const savedUser = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
@@ -696,9 +868,17 @@
             const errorBox = document.getElementById('loginError');
             const container = document.getElementById('mainContainer');
 
-            // Verify single login credentials (accepts 'admin 123' or 'admin123')
+            const customPass = getEffectivePassword();
             const isUserValid = (usernameInput === AUTH_USER);
-            const isPassValid = (passwordInput === AUTH_PASS || passwordInput === AUTH_PASS_ALT);
+            let isPassValid = false;
+
+            if (customPass) {
+                // User has set a custom password
+                isPassValid = (passwordInput === customPass);
+            } else {
+                // Using factory default password
+                isPassValid = (passwordInput === DEFAULT_AUTH_PASS || passwordInput === DEFAULT_AUTH_PASS_ALT);
+            }
 
             if (isUserValid && isPassValid) {
                 errorBox.style.display = 'none';
@@ -722,6 +902,72 @@
             sessionStorage.removeItem(AUTH_STORAGE_KEY);
             document.getElementById('passwordInput').value = '';
             showLogin();
+        }
+
+        // --- PASSWORD CHANGE MODAL LOGIC ---
+        function openPasswordModal() {
+            document.getElementById('currentPassInput').value = '';
+            document.getElementById('newPassInput').value = '';
+            document.getElementById('confirmPassInput').value = '';
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+
+        function handlePasswordChangeSubmit(event) {
+            event.preventDefault();
+            const currentPass = document.getElementById('currentPassInput').value.trim();
+            const newPass = document.getElementById('newPassInput').value.trim();
+            const confirmPass = document.getElementById('confirmPassInput').value.trim();
+            const modalError = document.getElementById('modalError');
+
+            const effectivePass = getEffectivePassword();
+            let isCurrentCorrect = false;
+
+            if (effectivePass) {
+                isCurrentCorrect = (currentPass === effectivePass);
+            } else {
+                isCurrentCorrect = (currentPass === DEFAULT_AUTH_PASS || currentPass === DEFAULT_AUTH_PASS_ALT);
+            }
+
+            if (!isCurrentCorrect) {
+                modalError.textContent = "Current password is incorrect.";
+                modalError.style.display = 'block';
+                return;
+            }
+
+            if (newPass.length < 4) {
+                modalError.textContent = "New password must be at least 4 characters.";
+                modalError.style.display = 'block';
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                modalError.textContent = "New passwords do not match. Please re-type.";
+                modalError.style.display = 'block';
+                return;
+            }
+
+            // Save new password
+            localStorage.setItem(CUSTOM_PASS_KEY, newPass);
+            modalError.style.display = 'none';
+            closePasswordModal();
+            showToast("Password updated successfully! Please remember it for your next login.", "success");
+        }
+
+        function promptResetPassword() {
+            const customPass = getEffectivePassword();
+            if (!customPass) {
+                alert("Your password is currently set to the default: 'admin 123'");
+                return;
+            }
+            if (confirm("Reset password back to default ('admin 123')?")) {
+                localStorage.removeItem(CUSTOM_PASS_KEY);
+                alert("Password has been reset to default: admin 123");
+            }
         }
 
         function togglePasswordVisibility() {
