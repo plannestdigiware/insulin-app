@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#090d16">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Insulin Dose Advisor</title>
+    <title>Insulin Dose Advisor - Secure Portal</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
     <style>
         :root {
             --bg-base: #090d16;
-            --bg-card: rgba(22, 30, 49, 0.85);
+            --bg-card: rgba(22, 30, 49, 0.92);
             --border-glass: rgba(255, 255, 255, 0.08);
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
@@ -59,6 +59,205 @@
             border-radius: 24px;
             padding: 24px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        /* -------------------------------------------------------------
+           LOGIN SCREEN STYLES
+           ------------------------------------------------------------- */
+        #loginView {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-icon {
+            width: 58px;
+            height: 58px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1.5px solid rgba(56, 189, 248, 0.35);
+            border-radius: 18px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+            color: var(--accent-cyan);
+        }
+
+        .login-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .login-header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-control {
+            width: 100%;
+            background: #0b1120;
+            border: 1.5px solid #334155;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 14px 16px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+            box-shadow: none;
+        }
+
+        .login-remember {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .login-remember label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            text-transform: none;
+            margin: 0;
+        }
+
+        .login-remember input[type="checkbox"] {
+            accent-color: var(--accent-blue);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .login-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .shake {
+            animation: shakeAnim 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes shakeAnim {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* -------------------------------------------------------------
+           DASHBOARD CONTROLLER STYLES
+           ------------------------------------------------------------- */
+        #dashboardView {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .user-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.6);
+            border-radius: 12px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        .user-badge {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: none;
+            width: auto;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ffffff;
+            transform: none;
+            box-shadow: none;
         }
 
         .header {
@@ -69,7 +268,7 @@
         }
 
         .title-group h1 {
-            font-size: 21px;
+            font-size: 20px;
             font-weight: 800;
             background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
             -webkit-background-clip: text;
@@ -121,7 +320,7 @@
 
         /* LCD 1602 Realistic Simulator */
         .lcd-frame {
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
 
         .lcd-label {
@@ -136,7 +335,6 @@
         }
 
         .lcd-screen {
-            background: #0284c7;
             background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
             border: 3px solid #38bdf8;
             border-radius: 12px;
@@ -159,7 +357,7 @@
 
         /* Form Inputs */
         .input-group {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         label {
@@ -168,18 +366,6 @@
             font-weight: 600;
             color: #cbd5e1;
             margin-bottom: 8px;
-        }
-
-        .device-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
-        .device-row input {
-            font-size: 14px !important;
-            padding: 10px 14px !important;
-            text-align: left !important;
         }
 
         input[type="number"], input[type="text"] {
@@ -208,7 +394,7 @@
             border-radius: 16px;
             padding: 16px;
             text-align: center;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
             transition: all 0.3s ease;
         }
 
@@ -238,7 +424,7 @@
             color: #f87171;
         }
 
-        /* Action Button */
+        /* Action Buttons */
         button {
             width: 100%;
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -272,12 +458,13 @@
             transform: none;
         }
 
-        /* Quick Pills for instant testing */
+        /* Quick Pills */
         .quick-pills {
             display: flex;
             gap: 6px;
             margin-top: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .pill {
@@ -286,7 +473,7 @@
             color: var(--text-secondary);
             font-size: 11px;
             font-weight: 600;
-            padding: 4px 10px;
+            padding: 5px 10px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -329,73 +516,234 @@
 </head>
 <body>
 
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="title-group">
-                <h1>Insulin Dose Advisor</h1>
-                <p>Internet Cloud Controller</p>
+    <div class="container" id="mainContainer">
+
+        <!-- =============================================================
+             1. SECURE LOGIN VIEW
+             ============================================================= -->
+        <div id="loginView">
+            <div class="login-header">
+                <div class="login-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h2>Administrator Portal</h2>
+                <p>Enter your admin credentials to access the Insulin Controller</p>
             </div>
-            <div id="statusBadge" class="status-badge connecting">
-                <span class="status-dot"></span>
-                <span id="statusText">CONNECTING...</span>
-            </div>
+
+            <div id="loginError" class="login-error">Invalid Login ID or Password</div>
+
+            <form onsubmit="handleLoginSubmit(event)">
+                <div class="form-group">
+                    <label for="usernameInput">Login ID</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="usernameInput" class="form-control" placeholder="admin" autocomplete="username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordInput">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="passwordInput" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility()" title="Show/Hide Password">
+                            <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="login-remember">
+                    <label>
+                        <input type="checkbox" id="rememberMeCheckbox" checked>
+                        Remember me on this device
+                    </label>
+                </div>
+
+                <button type="submit" id="loginBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                    </svg>
+                    Sign In
+                </button>
+            </form>
         </div>
 
-        <!-- 1602 LCD Preview -->
-        <div class="lcd-frame">
-            <div class="lcd-label">
-                <span>1602 LCD Real-Time Preview</span>
-                <span id="clockDisplay">--:--</span>
+
+        <!-- =============================================================
+             2. MAIN CONTROLLER DASHBOARD VIEW
+             ============================================================= -->
+        <div id="dashboardView">
+            <!-- Authenticated User Bar -->
+            <div class="user-top-bar">
+                <div class="user-info">
+                    <span class="user-badge">SECURE</span>
+                    <span id="currentUserName">Logged in: Admin</span>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
             </div>
-            <div class="lcd-screen">
-                <div class="lcd-row" id="lcdLine1">23-10-2026 17:20</div>
-                <div class="lcd-row" id="lcdLine2">Waiting input...</div>
+
+            <!-- Header -->
+            <div class="header">
+                <div class="title-group">
+                    <h1>Insulin Dose Advisor</h1>
+                    <p>Internet Cloud Controller</p>
+                </div>
+                <div id="statusBadge" class="status-badge connecting">
+                    <span class="status-dot"></span>
+                    <span id="statusText">CONNECTING...</span>
+                </div>
             </div>
-        </div>
 
-        <!-- Device Selector -->
-        <div class="input-group">
-            <label for="deviceIdInput">Target ESP32 Device ID:</label>
-            <input type="text" id="deviceIdInput" value="device1" placeholder="e.g. device1" autocomplete="off" onchange="saveDeviceId()">
-        </div>
-
-        <!-- Blood Glucose Input -->
-        <div class="input-group">
-            <label for="glucoseInput">Blood Glucose Level (0 - 999 mg/dL):</label>
-            <input type="number" id="glucoseInput" min="0" max="999" placeholder="e.g. 175" autocomplete="off" inputmode="numeric" oninput="handleGlucoseInput()">
-            
-            <div class="quick-pills">
-                <span class="pill" onclick="setQuickVal(85)">85 (Low)</span>
-                <span class="pill" onclick="setQuickVal(125)">125 (12 U)</span>
-                <span class="pill" onclick="setQuickVal(175)">175 (14 U)</span>
-                <span class="pill" onclick="setQuickVal(220)">220 (16 U)</span>
-                <span class="pill" onclick="setQuickVal(280)">280 (18 U)</span>
-                <span class="pill" onclick="setQuickVal(340)">340 (High)</span>
+            <!-- 1602 LCD Preview -->
+            <div class="lcd-frame">
+                <div class="lcd-label">
+                    <span>1602 LCD Real-Time Preview</span>
+                    <span id="clockDisplay">--:--</span>
+                </div>
+                <div class="lcd-screen">
+                    <div class="lcd-row" id="lcdLine1">23-10-2026 17:50</div>
+                    <div class="lcd-row" id="lcdLine2">Waiting input...</div>
+                </div>
             </div>
+
+            <!-- Device Selector -->
+            <div class="input-group">
+                <label for="deviceIdInput" style="font-size: 12px; text-transform: uppercase;">Target ESP32 Device ID:</label>
+                <input type="text" id="deviceIdInput" value="device1" placeholder="e.g. device1" style="font-size: 15px; padding: 10px; text-align: left;" autocomplete="off" onchange="saveDeviceId()">
+            </div>
+
+            <!-- Blood Glucose Input -->
+            <div class="input-group">
+                <label for="glucoseInput">Blood Glucose Level (0 - 999 mg/dL):</label>
+                <input type="number" id="glucoseInput" min="0" max="999" placeholder="e.g. 175" autocomplete="off" inputmode="numeric" oninput="handleGlucoseInput()">
+                
+                <div class="quick-pills">
+                    <span class="pill" onclick="setQuickVal(85)">85 (Low)</span>
+                    <span class="pill" onclick="setQuickVal(125)">125 (12 U)</span>
+                    <span class="pill" onclick="setQuickVal(175)">175 (14 U)</span>
+                    <span class="pill" onclick="setQuickVal(220)">220 (16 U)</span>
+                    <span class="pill" onclick="setQuickVal(280)">280 (18 U)</span>
+                    <span class="pill" onclick="setQuickVal(340)">340 (High)</span>
+                </div>
+            </div>
+
+            <!-- Dosage Recommendation Card -->
+            <div class="dose-result-card" id="doseCard">
+                <div class="dose-result-subtitle">Recommended Insulin Dose</div>
+                <div class="dose-result-value" id="doseValue">--</div>
+            </div>
+
+            <!-- Send Button -->
+            <button id="sendBtn" onclick="sendDoseOverCloud()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span id="btnText">Send to LCD Screen</span>
+            </button>
+
+            <div id="toast" class="toast"></div>
         </div>
 
-        <!-- Dosage Recommendation Card -->
-        <div class="dose-result-card" id="doseCard">
-            <div class="dose-result-subtitle">Recommended Insulin Dose</div>
-            <div class="dose-result-value" id="doseValue">--</div>
-        </div>
-
-        <!-- Send Button -->
-        <button id="sendBtn" onclick="sendDoseOverCloud()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-            <span id="btnText">Send to LCD Screen</span>
-        </button>
-
-        <div id="toast" class="toast"></div>
     </div>
 
     <script>
         // =========================================================================
-        // Configuration & MQTT over WebSockets (test.mosquitto.org:8081 WSS)
+        // 1. AUTHENTICATION CREDENTIALS
+        // Single Administrator Login: ID = admin | Password = admin 123
+        // =========================================================================
+        const AUTH_USER = "admin";
+        const AUTH_PASS = "admin 123";
+        const AUTH_PASS_ALT = "admin123"; // allows without space as well
+        const AUTH_STORAGE_KEY = "INSULIN_AUTH_USER";
+
+        function checkAuthStatus() {
+            const savedUser = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
+            if (savedUser) {
+                showDashboard(savedUser);
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginView').style.display = 'block';
+            document.getElementById('dashboardView').style.display = 'none';
+        }
+
+        function showDashboard(username) {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('dashboardView').style.display = 'block';
+            document.getElementById('currentUserName').textContent = "Logged in: Administrator";
+            
+            // Connect to Cloud Mosquitto once authorized
+            if (!mqttClient) {
+                connectMqtt();
+            }
+        }
+
+        function handleLoginSubmit(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('usernameInput').value.trim().toLowerCase();
+            const passwordInput = document.getElementById('passwordInput').value.trim();
+            const rememberMe = document.getElementById('rememberMeCheckbox').checked;
+            const errorBox = document.getElementById('loginError');
+            const container = document.getElementById('mainContainer');
+
+            // Verify single login credentials (accepts 'admin 123' or 'admin123')
+            const isUserValid = (usernameInput === AUTH_USER);
+            const isPassValid = (passwordInput === AUTH_PASS || passwordInput === AUTH_PASS_ALT);
+
+            if (isUserValid && isPassValid) {
+                errorBox.style.display = 'none';
+                if (rememberMe) {
+                    localStorage.setItem(AUTH_STORAGE_KEY, "admin");
+                } else {
+                    sessionStorage.setItem(AUTH_STORAGE_KEY, "admin");
+                }
+                showDashboard("admin");
+            } else {
+                errorBox.textContent = "Invalid Login ID or Password. Please check and try again.";
+                errorBox.style.display = 'block';
+                container.classList.remove('shake');
+                void container.offsetWidth; // Trigger reflow for animation
+                container.classList.add('shake');
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            sessionStorage.removeItem(AUTH_STORAGE_KEY);
+            document.getElementById('passwordInput').value = '';
+            showLogin();
+        }
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('passwordInput');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                eyeIcon.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                `;
+            } else {
+                pwdInput.type = 'password';
+                eyeIcon.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                `;
+            }
+        }
+
+        // =========================================================================
+        // 2. CONFIGURATION & MQTT OVER WEBSOCKETS (test.mosquitto.org:8081 WSS)
         // =========================================================================
         const MQTT_BROKER_HOST = "test.mosquitto.org";
         const MQTT_BROKER_PORT = 8081; // Secure WSS port
@@ -405,7 +753,13 @@
         let isConnected = false;
         let currentCalculatedDose = "";
 
-        // Clinical Mapping Rule
+        // Clinical Mapping Rule:
+        // < 100 mg/dL       -> Call Ramesh
+        // 100 to 150 mg/dL  -> 12 Units
+        // 150 to 200 mg/dL  -> 14 Units
+        // 200 to 250 mg/dL  -> 16 Units
+        // 250 to 300 mg/dL  -> 18 Units
+        // > 300 mg/dL       -> Call Ramesh
         function getClinicalDose(val) {
             if (val === "" || isNaN(val)) return null;
             const num = parseInt(val, 10);
@@ -606,7 +960,7 @@
                 document.getElementById('deviceIdInput').value = savedId;
             }
             document.getElementById('lcdLine1').textContent = getFormattedDateTime();
-            connectMqtt();
+            checkAuthStatus();
         });
     </script>
 </body>
