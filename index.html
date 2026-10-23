@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Insulin Dose Advisor</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Paho MQTT JavaScript Client via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --bg-card: rgba(22, 30, 49, 0.85);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #38bdf8;
+            --accent-blue: #2563eb;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.12) 0px, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .title-group h1 {
+            font-size: 21px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .title-group p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.connecting {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: currentColor;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        /* LCD 1602 Realistic Simulator */
+        .lcd-frame {
+            margin-bottom: 22px;
+        }
+
+        .lcd-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .lcd-screen {
+            background: #0284c7;
+            background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+            border: 3px solid #38bdf8;
+            border-radius: 12px;
+            padding: 16px 14px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(56, 189, 248, 0.25);
+            font-family: 'JetBrains Mono', monospace;
+            color: #ffffff;
+            text-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+        }
+
+        .lcd-row {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            line-height: 1.4;
+            white-space: pre;
+            overflow: hidden;
+            text-overflow: clip;
+        }
+
+        /* Form Inputs */
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .device-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .device-row input {
+            font-size: 14px !important;
+            padding: 10px 14px !important;
+            text-align: left !important;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            background: #0b1120;
+            border: 1.5px solid #334155;
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            padding: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        /* Insulin Dosage Output Card */
+        .dose-result-card {
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid #0284c7;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 22px;
+            transition: all 0.3s ease;
+        }
+
+        .dose-result-card.alert {
+            border-color: var(--accent-red);
+            background: rgba(69, 10, 10, 0.5);
+        }
+
+        .dose-result-subtitle {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .dose-result-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            margin-top: 4px;
+            letter-spacing: -0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .dose-result-card.alert .dose-result-value {
+            color: #f87171;
+        }
+
+        /* Action Button */
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.45);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Quick Pills for instant testing */
+        .quick-pills {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .pill {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pill:hover {
+            color: #ffffff;
+            border-color: var(--accent-cyan);
+        }
+
+        /* Toast notifications */
+        .toast {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .toast.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="title-group">
+                <h1>Insulin Dose Advisor</h1>
+                <p>Internet Cloud Controller</p>
+            </div>
+            <div id="statusBadge" class="status-badge connecting">
+                <span class="status-dot"></span>
+                <span id="statusText">CONNECTING...</span>
+            </div>
+        </div>
+
+        <!-- 1602 LCD Preview -->
+        <div class="lcd-frame">
+            <div class="lcd-label">
+                <span>1602 LCD Real-Time Preview</span>
+                <span id="clockDisplay">--:--</span>
+            </div>
+            <div class="lcd-screen">
+                <div class="lcd-row" id="lcdLine1">23-10-2026 17:20</div>
+                <div class="lcd-row" id="lcdLine2">Waiting input...</div>
+            </div>
+        </div>
+
+        <!-- Device Selector -->
+        <div class="input-group">
+            <label for="deviceIdInput">Target ESP32 Device ID:</label>
+            <input type="text" id="deviceIdInput" value="device1" placeholder="e.g. device1" autocomplete="off" onchange="saveDeviceId()">
+        </div>
+
+        <!-- Blood Glucose Input -->
+        <div class="input-group">
+            <label for="glucoseInput">Blood Glucose Level (0 - 999 mg/dL):</label>
+            <input type="number" id="glucoseInput" min="0" max="999" placeholder="e.g. 175" autocomplete="off" inputmode="numeric" oninput="handleGlucoseInput()">
+            
+            <div class="quick-pills">
+                <span class="pill" onclick="setQuickVal(85)">85 (Low)</span>
+                <span class="pill" onclick="setQuickVal(125)">125 (12 U)</span>
+                <span class="pill" onclick="setQuickVal(175)">175 (14 U)</span>
+                <span class="pill" onclick="setQuickVal(220)">220 (16 U)</span>
+                <span class="pill" onclick="setQuickVal(280)">280 (18 U)</span>
+                <span class="pill" onclick="setQuickVal(340)">340 (High)</span>
+            </div>
+        </div>
+
+        <!-- Dosage Recommendation Card -->
+        <div class="dose-result-card" id="doseCard">
+            <div class="dose-result-subtitle">Recommended Insulin Dose</div>
+            <div class="dose-result-value" id="doseValue">--</div>
+        </div>
+
+        <!-- Send Button -->
+        <button id="sendBtn" onclick="sendDoseOverCloud()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span id="btnText">Send to LCD Screen</span>
+        </button>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // Configuration & MQTT over WebSockets (test.mosquitto.org:8081 WSS)
+        // =========================================================================
+        const MQTT_BROKER_HOST = "test.mosquitto.org";
+        const MQTT_BROKER_PORT = 8081; // Secure WSS port
+        const BASE_TOPIC = "plannest/insulin";
+
+        let mqttClient = null;
+        let isConnected = false;
+        let currentCalculatedDose = "";
+
+        // Clinical Mapping Rule
+        function getClinicalDose(val) {
+            if (val === "" || isNaN(val)) return null;
+            const num = parseInt(val, 10);
+            if (num < 0 || num > 999) return null;
+
+            if (num < 100) return { dose: "Call Ramesh", isAlert: true };
+            if (num <= 150) return { dose: "12 Units", isAlert: false };
+            if (num <= 200) return { dose: "14 Units", isAlert: false };
+            if (num <= 250) return { dose: "16 Units", isAlert: false };
+            if (num <= 300) return { dose: "18 Units", isAlert: false };
+            return { dose: "Call Ramesh", isAlert: true };
+        }
+
+        function getFormattedDateTime() {
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const day = pad(now.getDate());
+            const month = pad(now.getMonth() + 1);
+            const year = now.getFullYear();
+            const hours = pad(now.getHours());
+            const mins = pad(now.getMinutes());
+            return `${day}-${month}-${year} ${hours}:${mins}`;
+        }
+
+        // Live Clock
+        setInterval(() => {
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            document.getElementById('clockDisplay').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        }, 1000);
+
+        function handleGlucoseInput() {
+            const input = document.getElementById('glucoseInput');
+            let val = input.value;
+            if (val.length > 3) {
+                val = val.slice(0, 3);
+                input.value = val;
+            }
+
+            const card = document.getElementById('doseCard');
+            const doseVal = document.getElementById('doseValue');
+            const lcdL1 = document.getElementById('lcdLine1');
+            const lcdL2 = document.getElementById('lcdLine2');
+
+            const currentDt = getFormattedDateTime();
+            lcdL1.textContent = currentDt;
+
+            const res = getClinicalDose(val);
+            if (!res) {
+                currentCalculatedDose = "";
+                doseVal.textContent = "--";
+                card.className = "dose-result-card";
+                lcdL2.textContent = "Waiting input...";
+                return;
+            }
+
+            currentCalculatedDose = res.dose;
+            doseVal.textContent = res.dose;
+            lcdL2.textContent = res.dose;
+
+            if (res.isAlert) {
+                card.className = "dose-result-card alert";
+            } else {
+                card.className = "dose-result-card";
+            }
+        }
+
+        function setQuickVal(num) {
+            const input = document.getElementById('glucoseInput');
+            input.value = num;
+            handleGlucoseInput();
+        }
+
+        function saveDeviceId() {
+            const devId = document.getElementById('deviceIdInput').value.trim() || 'device1';
+            localStorage.setItem('ESP32_DEVICE_ID', devId);
+        }
+
+        // MQTT Connection
+        function connectMqtt() {
+            const statusBadge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+
+            statusBadge.className = "status-badge connecting";
+            statusText.textContent = "CONNECTING...";
+
+            const clientId = "WebClient_" + Math.random().toString(16).substring(2, 10);
+            mqttClient = new Paho.MQTT.Client(MQTT_BROKER_HOST, MQTT_BROKER_PORT, "/mqtt", clientId);
+
+            mqttClient.onConnectionLost = (responseObject) => {
+                isConnected = false;
+                statusBadge.className = "status-badge connecting";
+                statusText.textContent = "RECONNECTING...";
+                setTimeout(connectMqtt, 3000);
+            };
+
+            mqttClient.onMessageArrived = (message) => {
+                const topic = message.destinationName;
+                const payload = message.payloadString;
+                if (payload === "online") {
+                    showToast("ESP32 Device is Online & Ready!", "success");
+                }
+            };
+
+            const options = {
+                timeout: 5,
+                useSSL: true, // Secure WSS
+                keepAliveInterval: 30,
+                cleanSession: true,
+                onSuccess: () => {
+                    isConnected = true;
+                    statusBadge.className = "status-badge";
+                    statusText.textContent = "CLOUD ONLINE";
+                    showToast("Connected to Eclipse Mosquitto Cloud", "success");
+
+                    const devId = document.getElementById('deviceIdInput').value.trim() || 'device1';
+                    mqttClient.subscribe(`${BASE_TOPIC}/${devId}/status`, { qos: 0 });
+                },
+                onFailure: (err) => {
+                    isConnected = false;
+                    statusBadge.className = "status-badge error";
+                    statusText.textContent = "OFFLINE";
+                    setTimeout(connectMqtt, 5000);
+                }
+            };
+
+            try {
+                mqttClient.connect(options);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function sendDoseOverCloud() {
+            const val = document.getElementById('glucoseInput').value.trim();
+            if (!val) {
+                showToast("Please enter blood glucose level (0 - 999 mg/dL)", "error");
+                return;
+            }
+
+            const res = getClinicalDose(val);
+            if (!res) {
+                showToast("Please enter a valid 3-digit number (0 - 999)", "error");
+                return;
+            }
+
+            const devId = document.getElementById('deviceIdInput').value.trim() || 'device1';
+            const dt = getFormattedDateTime();
+
+            const payload = JSON.stringify({
+                dose: res.dose,
+                time: dt
+            });
+
+            const topic = `${BASE_TOPIC}/${devId}/dose`;
+
+            const btn = document.getElementById('sendBtn');
+            const btnText = document.getElementById('btnText');
+            btn.disabled = true;
+            btnText.textContent = "Sending over 4G/Cloud...";
+
+            if (!isConnected) {
+                showToast("Cloud connection in progress. Please wait...", "error");
+                btn.disabled = false;
+                btnText.textContent = "Send to LCD Screen";
+                return;
+            }
+
+            try {
+                const message = new Paho.MQTT.Message(payload);
+                message.destinationName = topic;
+                message.qos = 1;
+                mqttClient.send(message);
+
+                showToast(`Delivered to ESP32: "${res.dose}"`, "success");
+            } catch (err) {
+                showToast("Failed to publish: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = "Send to LCD Screen";
+            }
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3500);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedId = localStorage.getItem('ESP32_DEVICE_ID');
+            if (savedId) {
+                document.getElementById('deviceIdInput').value = savedId;
+            }
+            document.getElementById('lcdLine1').textContent = getFormattedDateTime();
+            connectMqtt();
+        });
+    </script>
+</body>
+</html>
